@@ -1,0 +1,26 @@
+rules:
+- id: guardian-rule-gen.python-eval-on-request-data
+  mode: taint
+  languages:
+  - python
+  severity: ERROR
+  message: Flags eval() on user-controlled values in Django views, which gives remote
+    code execution. Use ast.literal_eval or a safe parser instead.
+  pattern-sources:
+  - patterns:
+    - pattern-either:
+      - pattern: request.POST
+      - pattern: request.GET
+      - pattern: request.COOKIES
+      - pattern: request.body
+      - pattern: request.data
+      - pattern: request.FILES
+      - pattern: request.headers
+      - pattern: request.META
+      - pattern: request.read(...)
+  pattern-sinks:
+  - patterns:
+    - pattern: eval($X, ...)
+    - focus-metavariable: $X
+  pattern-sanitizers:
+  - pattern: ast.literal_eval(...)

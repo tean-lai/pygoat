@@ -1,0 +1,27 @@
+rules:
+- id: guardian-rule-gen.python-unsafe-deserialization-pickle-yaml
+  languages:
+  - python
+  severity: ERROR
+  message: Flags pickle.loads() and yaml.load() without SafeLoader on data that may
+    come from requests, cookies or uploads. Both allow arbitrary code execution; use
+    json or yaml.safe_load.
+  metadata:
+    category: security
+    cwe: 'CWE-502: Deserialization of Untrusted Data'
+  pattern-either:
+  - patterns:
+    - pattern: pickle.loads(...)
+    - pattern-not: pickle.loads("...")
+    - pattern-not: pickle.loads(b"...")
+  - patterns:
+    - pattern-either:
+      - pattern: yaml.load($DATA)
+      - pattern: yaml.load($DATA, ...)
+      - pattern: yaml.load(..., Loader=$L)
+    - pattern-not: yaml.load($DATA, yaml.SafeLoader)
+    - pattern-not: yaml.load($DATA, Loader=yaml.SafeLoader)
+    - pattern-not: yaml.load($DATA, yaml.CSafeLoader)
+    - pattern-not: yaml.load($DATA, Loader=yaml.CSafeLoader)
+    - pattern-not: yaml.load($DATA, SafeLoader)
+    - pattern-not: yaml.load($DATA, Loader=SafeLoader)

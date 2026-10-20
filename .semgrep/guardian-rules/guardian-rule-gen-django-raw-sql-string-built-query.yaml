@@ -1,0 +1,32 @@
+rules:
+- id: guardian-rule-gen.django-raw-sql-string-built-query
+  mode: taint
+  languages:
+  - python
+  severity: ERROR
+  message: Flags Model.objects.raw() called with a query that is built via string
+    formatting, concatenation or f-strings, which allows SQL injection. Use parameterized
+    queries (params argument) or the ORM instead.
+  metadata:
+    category: security
+    cwe: 'CWE-89: Improper Neutralization of Special Elements used in an SQL Command
+      (''SQL Injection'')'
+  pattern-sources:
+  - patterns:
+    - pattern-either:
+      - pattern: |
+          "..." + $X
+      - pattern: |
+          $X + "..."
+      - pattern: |
+          "...".format(...)
+      - pattern: |
+          "..." % $X
+      - pattern: |
+          f"...{$X}..."
+    - pattern-not: |
+        "..." + "..."
+  pattern-sinks:
+  - patterns:
+    - pattern: $MODEL.objects.raw($Q, ...)
+    - focus-metavariable: $Q

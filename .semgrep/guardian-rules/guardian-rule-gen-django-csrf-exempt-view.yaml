@@ -1,0 +1,25 @@
+rules:
+- id: guardian-rule-gen.django-csrf-exempt-view
+  languages:
+  - python
+  severity: WARNING
+  message: Flags use of @csrf_exempt on Django views. It disables CSRF protection
+    on state-changing endpoints; this repo applies it to many views, and new code
+    should not copy that pattern.
+  pattern-either:
+  - pattern: |
+      @csrf_exempt
+      def $FUNC(...):
+          ...
+  - pattern: |
+      @csrf_exempt
+      class $CLS(...):
+          ...
+  - pattern: |
+      @django.views.decorators.csrf.csrf_exempt
+      def $FUNC(...):
+          ...
+  - pattern: |
+      @method_decorator(csrf_exempt, ...)
+      class $CLS(...):
+          ...
