@@ -1,0 +1,26 @@
+rules:
+- id: guardian-rule-gen.django-raw-sql-string-built-query
+  languages:
+  - python
+  severity: ERROR
+  message: Flags Django ORM .raw() calls whose query is built via f-strings, % formatting,
+    .format() or concatenation (or a variable built that way). User input interpolated
+    into raw SQL leads to SQL injection; use parameterized queries (params=[...])
+    or ORM filters.
+  metadata:
+    category: security
+    cwe: 'CWE-89: SQL Injection'
+  mode: taint
+  pattern-sources:
+  - patterns:
+    - pattern-either:
+      - pattern: f"..."
+      - pattern: $X + $Y
+      - pattern: $X % $Y
+      - pattern: $S.format(...)
+    - pattern-not: '"..." + "..."'
+    - pattern-not: $X % $Y = ...
+  pattern-sinks:
+  - patterns:
+    - pattern: $MODEL.raw($QUERY, ...)
+    - focus-metavariable: $QUERY

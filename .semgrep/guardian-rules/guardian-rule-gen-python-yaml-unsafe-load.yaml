@@ -1,0 +1,22 @@
+rules:
+- id: guardian-rule-gen.python-yaml-unsafe-load
+  languages:
+  - python
+  severity: ERROR
+  message: Flags yaml.load() with yaml.Loader (or no Loader) instead of yaml.safe_load().
+    Unsafe loaders can construct arbitrary Python objects from uploaded YAML, giving
+    code execution.
+  metadata:
+    category: security
+    cwe: 'CWE-502: Deserialization of Untrusted Data'
+  patterns:
+  - pattern-either:
+    - pattern: yaml.load($DATA)
+    - pattern: yaml.load($DATA, yaml.Loader)
+    - pattern: yaml.load($DATA, Loader=yaml.Loader)
+    - pattern: yaml.load($DATA, yaml.UnsafeLoader)
+    - pattern: yaml.load($DATA, Loader=yaml.UnsafeLoader)
+    - pattern: yaml.load($DATA, yaml.FullLoader)
+    - pattern: yaml.load($DATA, Loader=yaml.FullLoader)
+    - pattern: yaml.load($DATA, yaml.CLoader)
+    - pattern: yaml.load($DATA, Loader=yaml.CLoader)

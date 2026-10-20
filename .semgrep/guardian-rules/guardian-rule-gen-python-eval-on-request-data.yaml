@@ -1,0 +1,19 @@
+rules:
+- id: guardian-rule-gen.python-eval-on-request-data
+  languages:
+  - python
+  severity: ERROR
+  message: Flags eval() (and PIL ImageMath.eval) called with non-constant input in
+    view/handler code. Evaluating user-supplied strings leads to remote code execution;
+    use ast.literal_eval or an explicit parser.
+  metadata:
+    category: security
+    cwe: 'CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code'
+  patterns:
+  - pattern-either:
+    - pattern: eval($X, ...)
+    - pattern: ImageMath.eval($X, ...)
+    - pattern: PIL.ImageMath.eval($X, ...)
+  - pattern-not: eval("...", ...)
+  - pattern-not: ImageMath.eval("...", ...)
+  - pattern-not: PIL.ImageMath.eval("...", ...)

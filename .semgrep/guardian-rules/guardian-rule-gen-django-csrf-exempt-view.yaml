@@ -1,0 +1,28 @@
+rules:
+- id: guardian-rule-gen.django-csrf-exempt-view
+  languages:
+  - python
+  severity: WARNING
+  message: Flags use of the @csrf_exempt decorator on views. Disabling CSRF protection
+    on state-changing endpoints enables cross-site request forgery; keep CSRF enabled
+    and pass the token instead.
+  metadata:
+    category: security
+    cwe: 'CWE-352: Cross-Site Request Forgery (CSRF)'
+  pattern-either:
+  - pattern: |
+      @csrf_exempt
+      def $F(...):
+          ...
+  - pattern: |
+      @csrf_exempt
+      async def $F(...):
+          ...
+  - pattern: |
+      @django.views.decorators.csrf.csrf_exempt
+      def $F(...):
+          ...
+  - pattern: |
+      @csrf_exempt
+      class $C(...):
+          ...

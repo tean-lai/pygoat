@@ -1,0 +1,21 @@
+rules:
+- id: guardian-rule-gen.python-pickle-loads-untrusted-data
+  languages:
+  - python
+  severity: ERROR
+  message: Flags pickle.loads()/pickle.load() on non-literal data. Unpickling user-controlled
+    cookies, tokens or request bodies allows arbitrary code execution; use JSON or
+    signed data instead.
+  patterns:
+  - pattern-either:
+    - pattern: pickle.loads($DATA, ...)
+    - pattern: pickle.load($DATA, ...)
+    - pattern: _pickle.loads($DATA, ...)
+    - pattern: _pickle.load($DATA, ...)
+    - pattern: cPickle.loads($DATA, ...)
+    - pattern: cPickle.load($DATA, ...)
+  - pattern-not: pickle.loads("...", ...)
+  - pattern-not: pickle.loads(b"...", ...)
+  metadata:
+    category: security
+    cwe: 'CWE-502: Deserialization of Untrusted Data'
