@@ -1,0 +1,24 @@
+rules:
+  - id: ftr-request-to-pickle-loads
+    mode: taint
+    languages: [python]
+    severity: ERROR
+    message: Request data is unpickled. Unpickling attacker-controlled bytes runs arbitrary code.
+    metadata:
+      source: findings-to-rules
+      cwe: "CWE-502: Deserialization of Untrusted Data"
+    pattern-sources:
+      - patterns:
+          - pattern: request.$ATTR
+          - metavariable-regex:
+              metavariable: $ATTR
+              regex: ^(GET|POST|body|FILES|COOKIES|META|data|form|args|values|cookies|headers|files|json)$
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: pickle.loads($X, ...)
+              - pattern: pickle.load($X, ...)
+              - pattern: _pickle.loads($X, ...)
+              - pattern: cPickle.loads($X, ...)
+              - pattern: dill.loads($X, ...)
+          - focus-metavariable: $X

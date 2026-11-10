@@ -1,0 +1,23 @@
+rules:
+  - id: ftr-request-to-eval
+    mode: taint
+    languages: [python]
+    severity: ERROR
+    message: Request data reaches a code-evaluation function. An attacker can run arbitrary Python.
+    metadata:
+      source: findings-to-rules
+      cwe: "CWE-95: Eval Injection"
+    pattern-sources:
+      - patterns:
+          - pattern: request.$ATTR
+          - metavariable-regex:
+              metavariable: $ATTR
+              regex: ^(GET|POST|body|FILES|COOKIES|META|data|form|args|values|cookies|headers|files|json)$
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: eval($X, ...)
+              - pattern: exec($X, ...)
+              - pattern: ImageMath.eval($X, ...)
+              - pattern: PIL.ImageMath.eval($X, ...)
+          - focus-metavariable: $X

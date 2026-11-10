@@ -1,0 +1,23 @@
+rules:
+  - id: ftr-xml-external-entities-enabled
+    languages: [python]
+    severity: ERROR
+    message: XML is parsed with external general entities enabled (XXE). An attacker can read local files or make server-side requests.
+    metadata:
+      source: findings-to-rules
+      cwe: "CWE-611: Improper Restriction of XML External Entity Reference"
+    patterns:
+      - pattern-inside: |
+          $P.setFeature($FEAT, True)
+          ...
+      - metavariable-pattern:
+          metavariable: $FEAT
+          pattern-either:
+            - pattern: feature_external_ges
+            - pattern: xml.sax.handler.feature_external_ges
+            - pattern: feature_external_pes
+            - pattern: xml.sax.handler.feature_external_pes
+      - pattern-either:
+          - pattern: $PARSE(..., parser=$P, ...)
+          - pattern: $P.parse(...)
+          - pattern: $P.feed(...)

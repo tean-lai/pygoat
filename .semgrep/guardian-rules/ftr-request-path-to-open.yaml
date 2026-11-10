@@ -1,0 +1,24 @@
+rules:
+  - id: ftr-request-path-to-open
+    mode: taint
+    languages: [python]
+    severity: ERROR
+    message: Request data is used as a file path. An attacker can read or write files outside the intended directory.
+    metadata:
+      source: findings-to-rules
+      cwe: "CWE-22: Path Traversal"
+    pattern-sources:
+      - patterns:
+          - pattern: request.$ATTR
+          - metavariable-regex:
+              metavariable: $ATTR
+              regex: ^(GET|POST|body|FILES|COOKIES|META|data|form|args|values|cookies|headers|files|json)$
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: open($P, ...)
+              - pattern: io.open($P, ...)
+              - pattern: codecs.open($P, ...)
+          - focus-metavariable: $P
+    pattern-sanitizers:
+      - pattern: os.path.basename(...)

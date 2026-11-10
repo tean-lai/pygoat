@@ -1,0 +1,16 @@
+rules:
+  - id: ftr-subprocess-shell-nonliteral
+    languages: [python]
+    severity: ERROR
+    message: A non-constant command is run through a shell. If any part of it comes from user input, the user can inject shell commands. Pass an argument list without shell=True.
+    metadata:
+      source: findings-to-rules
+      cwe: "CWE-78: OS Command Injection"
+    patterns:
+      - pattern-either:
+          - pattern: subprocess.$FN($CMD, ..., shell=True, ...)
+          - pattern: os.system($CMD)
+          - pattern: os.popen($CMD, ...)
+      - pattern-not: subprocess.$FN("...", ...)
+      - pattern-not: os.system("...")
+      - pattern-not: os.popen("...", ...)

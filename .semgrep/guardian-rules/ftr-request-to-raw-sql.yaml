@@ -1,0 +1,31 @@
+rules:
+  - id: ftr-request-to-raw-sql
+    mode: taint
+    languages: [python]
+    severity: ERROR
+    message: Request data is concatenated or formatted into a SQL string. Use query parameters instead.
+    metadata:
+      source: findings-to-rules
+      cwe: "CWE-89: SQL Injection"
+    pattern-sources:
+      - patterns:
+          - pattern: request.$ATTR
+          - metavariable-regex:
+              metavariable: $ATTR
+              regex: ^(GET|POST|body|FILES|COOKIES|META|data|form|args|values|cookies|headers|files|json)$
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: $M.objects.raw($Q, ...)
+              - pattern: $CUR.execute($Q, ...)
+              - pattern: $M.objects.extra(..., where=$Q, ...)
+          - focus-metavariable: $Q
+      - patterns:
+          - pattern-either:
+              - pattern: '"$SQL" + $X'
+              - pattern: '"$SQL" % $X'
+              - pattern: '"$SQL".format(...)'
+              - pattern: f"$SQL{...}"
+          - metavariable-regex:
+              metavariable: $SQL
+              regex: (?i)^\s*(select|insert|update|delete)\s

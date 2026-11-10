@@ -1,0 +1,23 @@
+rules:
+  - id: ftr-request-to-http-client-ssrf
+    mode: taint
+    languages: [python]
+    severity: ERROR
+    message: Request data controls the URL of a server-side HTTP request (SSRF).
+    metadata:
+      source: findings-to-rules
+      cwe: "CWE-918: Server-Side Request Forgery"
+    pattern-sources:
+      - patterns:
+          - pattern: request.$ATTR
+          - metavariable-regex:
+              metavariable: $ATTR
+              regex: ^(GET|POST|body|FILES|COOKIES|META|data|form|args|values|cookies|headers|files|json)$
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: requests.$METHOD($URL, ...)
+              - pattern: requests.request($VERB, $URL, ...)
+              - pattern: urllib.request.urlopen($URL, ...)
+              - pattern: httpx.$METHOD($URL, ...)
+          - focus-metavariable: $URL

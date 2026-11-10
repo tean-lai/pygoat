@@ -1,0 +1,28 @@
+rules:
+  - id: ftr-request-data-written-to-file
+    mode: taint
+    languages: [python]
+    severity: WARNING
+    message: Request data is written into a file on the server. If that file is code or a template, the attacker gets code execution or template injection.
+    metadata:
+      source: findings-to-rules
+      cwe: "CWE-73: External Control of File Name or Path"
+    pattern-sources:
+      - patterns:
+          - pattern: request.$ATTR
+          - metavariable-regex:
+              metavariable: $ATTR
+              regex: ^(GET|POST|body|FILES|COOKIES|META|data|form|args|values|cookies|headers|files|json)$
+    pattern-sinks:
+      - patterns:
+          - pattern-inside: |
+              $F = open(...)
+              ...
+          - pattern: $F.write($DATA)
+          - focus-metavariable: $DATA
+      - patterns:
+          - pattern-inside: |
+              with open(...) as $F:
+                ...
+          - pattern: $F.write($DATA)
+          - focus-metavariable: $DATA

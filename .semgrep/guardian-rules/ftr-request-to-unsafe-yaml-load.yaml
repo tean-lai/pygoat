@@ -1,0 +1,31 @@
+rules:
+  - id: ftr-request-to-unsafe-yaml-load
+    mode: taint
+    languages: [python]
+    severity: ERROR
+    message: Request data is parsed with an unsafe YAML loader, which can construct arbitrary Python objects. Use yaml.safe_load.
+    metadata:
+      source: findings-to-rules
+      cwe: "CWE-502: Deserialization of Untrusted Data"
+    pattern-sources:
+      - patterns:
+          - pattern: request.$ATTR
+          - metavariable-regex:
+              metavariable: $ATTR
+              regex: ^(GET|POST|body|FILES|COOKIES|META|data|form|args|values|cookies|headers|files|json)$
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: yaml.unsafe_load($X, ...)
+              - pattern: yaml.full_load($X, ...)
+              - patterns:
+                  - pattern-either:
+                      - pattern: yaml.load($X, $L, ...)
+                      - pattern: yaml.load($X, ..., Loader=$L, ...)
+                  - metavariable-pattern:
+                      metavariable: $L
+                      patterns:
+                        - pattern-not: yaml.SafeLoader
+                        - pattern-not: yaml.CSafeLoader
+                        - pattern-not: SafeLoader
+          - focus-metavariable: $X
